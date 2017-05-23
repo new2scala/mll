@@ -14,8 +14,23 @@
           <groupId>commons-io</groupId>
           <artifactId>commons-io</artifactId>
       </dependency>
+      <dependency>
+          <groupId>org.nd4j</groupId>
+          <artifactId>nd4j-native</artifactId>
+      </dependency>
+      <dependency>
+          <groupId>org.nd4j</groupId>
+          <artifactId>nd4j-api</artifactId>
+      </dependency>
+      <dependency>
+          <groupId>com.joptimizer</groupId>
+          <artifactId>joptimizer</artifactId>
+      </dependency>
+      <dependency>
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-compress</artifactId>
+      </dependency>
   </dependencies>
-
 
     <build>
         <plugins>
