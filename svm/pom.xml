@@ -11,6 +11,11 @@
     <artifactId>mll-svm</artifactId>
   <dependencies>
       <dependency>
+          <groupId>org.scalatest</groupId>
+          <artifactId>scalatest_${scala.minor.version}</artifactId>
+      </dependency>
+
+      <dependency>
           <groupId>commons-io</groupId>
           <artifactId>commons-io</artifactId>
       </dependency>
