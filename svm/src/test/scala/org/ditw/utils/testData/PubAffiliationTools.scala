@@ -14,87 +14,8 @@ import scala.util.Random
   * Created by dev on 2017-06-02.
   */
 object PubAffiliationTools extends App {
+  import RandGen._
   object GenData {
-
-    val charset = StandardCharsets.UTF_8
-
-    val Countries = Set(
-      "UK", "USA", "Spain", "Japan", "Norway", "Switzerland", "Australia", "Korea",
-      "France", "Iran", "China", "Austria", "Poland"
-    )
-
-    def loadTexts(f:String):IndexedSeq[String] = Source.fromFile(f, charset.name()).getLines().toIndexedSeq
-    def genUSState(f:String):IndexedSeq[String] = {
-
-      val states = loadTexts(f)
-      // each line contains 2 entries, state name and abbr
-      states.map { l =>
-        val parts = l.split("\\s+")
-        parts.last
-      }
-    }
-
-    val Cities = loadTexts("/media/sf_work/us_city_names.txt")
-    val States = genUSState("/media/sf_work/us_states.txt")
-
-    val rand = new Random()
-    def genSeq(chars:IndexedSeq[Char], length:Int):String = {
-      var s = ""
-      (0 until length).map { i =>
-        val idx = math.abs(rand.nextInt) % chars.length
-        s += chars(idx)
-      }
-      s
-    }
-
-    val numbers = (0 to 9).map(_.toString.charAt(0))
-    val capital_letters = ('A' to 'Z')
-    val lower_letters = ('a' to 'z')
-    val num_cap = numbers ++ capital_letters
-
-    def genNumbers(length:Int):String = {
-      genSeq(numbers, length)
-    }
-    def genCapLetters(length:Int):String = {
-      genSeq(capital_letters, length)
-    }
-    def genLowerLetters(length:Int):String = {
-      genSeq(lower_letters, length)
-    }
-    def genNumCapLetters(length:Int):String = {
-      genSeq(num_cap, length)
-    }
-    def randPick(entries:IndexedSeq[String]):String = {
-      val idx = math.abs(rand.nextInt) % entries.size
-      entries(idx)
-    }
-    def randCountry(randSeed:Int = 0):String = {
-      randPick(Countries.toIndexedSeq)
-    }
-    def randCity() = randPick(Cities)
-    def randState() = randPick(States)
-
-    def randUsPostal1() = genNumbers(5)
-    def randUsPostal2() = {
-      genNumbers(5) + '-' + genNumbers(4)
-    }
-    def randUkPostal() = {
-      genNumCapLetters(3) + ' ' + genNumCapLetters(3)
-    }
-
-    def randWord() = {
-      val c = genCapLetters(1)
-      val x = rand.nextInt
-      val l = math.abs(x) % 10 + 4
-      val ll = genLowerLetters(l)
-      c + ll
-    }
-
-    def randRoad() = {
-      val c = rand.nextInt()
-      val wc = math.abs(c) % 3 + 2
-      (0 until wc).map(_ => randWord()).mkString(" ")
-    }
 
     // city_postal, country
     //   Madrid 28049, Spain
@@ -136,11 +57,13 @@ object PubAffiliationTools extends App {
     val Tag_University = "UNIV"
     val Tag_School = "SCHOOL"
     val Tag_Division = "DIVI"
+    val Tag_MedCenter = "MED_CENTER"
     val Tag_LAB = "DIVI"
     val Tag_Country = "COUNTRY"
     val Tag_StatePostal = "STATE_POSTAL"
     val Tag_CityPostal = "CITY_POSTAL"
     val Tag_City = "CITY"
+    val Tag_State = "State"
     val Tag_Street = "STREET"
     val Tag_Building = "BUILDING"
 
@@ -176,6 +99,29 @@ object PubAffiliationTools extends App {
 
     )
 
+    // Division of Parasitic Diseases and Malaria, Centers for Disease Control and Prevention, Atlanta, Georgia
+    val AffTags_Divi_MedCenter = List(Tag_Division, Tag_MedCenter)
+    val LocTags_City_State = List(Tag_City, Tag_State)
+
+    def Gen_Divi_MedCenter() = {
+      "%s, %s".format(randDivi(), randCenter())
+    }
+    def Gen_City_State() = {
+      "%s, %s".format(randCity(), randStateOrAbbr())
+    }
+    val Gen_Divi_MedCenter__City_State = (params:Seq[String]) => {
+      "%s, %s".format(Gen_Divi_MedCenter(), Gen_City_State())
+    }
+    val FullTemplates = IndexedSeq(
+      (
+        Gen_Divi_MedCenter__City_State,
+        () => {
+          Seq[String]()
+        },
+        AffTags_Divi_MedCenter ::: LocTags_City_State
+      )
+    )
+
     val Separator = "===="
 
     def genData(count:Int):IndexedSeq[String] = {
@@ -185,6 +131,18 @@ object PubAffiliationTools extends App {
         val ti = rand.nextInt()
         val templIdx = math.abs(ti) % Templates.size
         val (f1, f2, l) = Templates(templIdx)
+        val params:Seq[String] = f2()
+        f1(params) + Separator + l.mkString(",")
+      }
+    }
+
+    def genFullData(count:Int):IndexedSeq[String] = {
+      rand.setSeed(0)
+
+      (0 until count).map { i =>
+        val ti = rand.nextInt()
+        val templIdx = math.abs(ti) % FullTemplates.size
+        val (f1, f2, l) = FullTemplates(templIdx)
         val params:Seq[String] = f2()
         f1(params) + Separator + l.mkString(",")
       }
@@ -251,14 +209,21 @@ object PubAffiliationTools extends App {
 //
 //  println(GenData.randCountry(4))
 //
-//  println(GenData.genData(10).mkString("\n"))
+  println(GenData.genFullData(10).mkString("\n"))
 
 //  val f1 = "/media/sf_work/aff-data/train-1.txt"
 //  GenData.genDataAndSave(20000, f1)
 //  val f2 = "/media/sf_work/aff-data/train-1-converted.txt"
 //  GenData.convFile(f1, f2)
-  val f1 = "/media/sf_work/aff-data/test-1.txt"
-  val f2 = "/media/sf_work/aff-data/test-1-converted.txt"
 
-  GenData.convTestFile(f1, f2)
+//  val f1 = "/media/sf_work/aff-data/test-1.txt"
+//  val f2 = "/media/sf_work/aff-data/test-1-converted.txt"
+
+//  GenData.convTestFile(f1, f2)
+
+//  rand.setSeed(1000)
+//  List(
+//    randCenter(),
+//    randDept()
+//  ).foreach(println)
 }
