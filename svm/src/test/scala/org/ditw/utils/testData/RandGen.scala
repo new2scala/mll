@@ -64,7 +64,7 @@ object RandGen {
     val idx = math.abs(rand.nextInt) % entries.size
     entries(idx)
   }
-  def randCountry(randSeed:Int = 0):String = {
+  def randCountry():String = {
     randPick(Countries.toIndexedSeq)
   }
   def randCity() = randPick(Cities)
@@ -103,11 +103,6 @@ object RandGen {
     randWords(wc)
   }
 
-  val DiviTemplate = "Division of %s"
-  def randDivi() = {
-    DiviTemplate.format(randWords(4, 1))
-  }
-
 
   def randRoad() = {
     randWords(5, 2)
@@ -117,7 +112,10 @@ object RandGen {
   val DeptWords = IndexedSeq("Department", "Dept")
   val DivisionWords = IndexedSeq("Division")
   val InstituteWords = IndexedSeq("Institute")
-  val UniversityWords = IndexedSeq("University", "Univ")
+  val UniversityWords = IndexedSeq("University")
+  val SchoolWords = IndexedSeq("School")
+  val CollegeWords = IndexedSeq("College")
+
   val ForOf = IndexedSeq("for", "of")
   val Of = IndexedSeq("of")
 
@@ -127,6 +125,37 @@ object RandGen {
     "%s %s %s".format(setA(idxA), setX(idxX), randWords(maxCount, minCount))
   }
 
+  def RandA(setA:IndexedSeq[String], maxCount:Int, minCount:Int):String = {
+    val idxA = randIndex(setA.size)
+    "%s %s".format(randWords(maxCount, minCount), setA(idxA))
+  }
+
+  def randInstitute() = AXRand(InstituteWords, Of, 4, 2)
   def randCenter() = AXRand(CenterWords, ForOf, 4, 2)
   def randDept() = AXRand(DeptWords, Of, 4, 2)
+  def randDivi() = AXRand(DivisionWords, Of, 4, 1)
+  def randUniv() = {
+    val c = rand.nextInt() % 2
+    if (c == 0) AXRand(UniversityWords, Of, 4, 1)
+    else RandA(UniversityWords, 4, 2)
+  }
+  def randSchool() = AXRand(SchoolWords, Of, 4, 1)
+  def randCollege() = AXRand(CollegeWords, Of, 4, 1)
+
+  type StrGen = ()=>String
+  def randChoice(gens:StrGen*):String = {
+    val c = math.abs(rand.nextInt) % gens.size
+    gens(c)()
+  }
+
+  def randStatePostal() = {
+    val postal = randChoice(randUsPostal1, randUsPostal2)
+    "%s %s".format(randStateAbbr(), postal)
+  }
+
+  def randCityPostal() = {
+    val postal = randChoice(randUsPostal1, randUsPostal2, randUkPostal)
+    "%s %s".format(randCity(), postal)
+  }
+
 }

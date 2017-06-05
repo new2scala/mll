@@ -55,6 +55,7 @@ object PubAffiliationTools extends App {
     val Tag_Department = "DEPT"
     val Tag_ResearchInstitute = "RES_INST"
     val Tag_University = "UNIV"
+    val Tag_College = "COLLEGE"
     val Tag_School = "SCHOOL"
     val Tag_Division = "DIVI"
     val Tag_MedCenter = "MED_CENTER"
@@ -62,8 +63,9 @@ object PubAffiliationTools extends App {
     val Tag_Country = "COUNTRY"
     val Tag_StatePostal = "STATE_POSTAL"
     val Tag_CityPostal = "CITY_POSTAL"
+    val Tag_District = "DISTRICT"
     val Tag_City = "CITY"
-    val Tag_State = "State"
+    val Tag_State = "STATE"
     val Tag_Street = "STREET"
     val Tag_Building = "BUILDING"
 
@@ -101,25 +103,101 @@ object PubAffiliationTools extends App {
 
     // Division of Parasitic Diseases and Malaria, Centers for Disease Control and Prevention, Atlanta, Georgia
     val AffTags_Divi_MedCenter = List(Tag_Division, Tag_MedCenter)
-    val LocTags_City_State = List(Tag_City, Tag_State)
+    val AffTags_School_Univ = List(Tag_School, Tag_University)
+    val AffTags_Department_College = List(Tag_Department, Tag_College)
+    val AffTags_Department_Univ = List(Tag_Department, Tag_University)
+    val AffTags_ResearchInstitute = List(Tag_ResearchInstitute)
 
+    val LocTags_City_State = List(Tag_City, Tag_State)
+    val LocTags_City_Country = List(Tag_City, Tag_Country)
+    val LocTags_City_StatePostal_Country = List(Tag_City, Tag_StatePostal, Tag_Country)
+    val LocTags_District_CityPostal_Country = List(Tag_District, Tag_CityPostal, Tag_Country)
+
+    def Gen_School_Univ() = {
+      "%s, %s".format(randSchool(), randUniv())
+    }
+    def Gen_Dept_College() = {
+      "%s, %s".format(randDept(), randCollege())
+    }
+    def Gen_ResearchInstitute() = {
+      "%s %s".format(randWords(3, 1), randInstitute())
+    }
+    def Gen_Dept_Univ() = {
+      "%s, %s".format(randDept(), randUniv())
+    }
     def Gen_Divi_MedCenter() = {
       "%s, %s".format(randDivi(), randCenter())
+    }
+    val Gen_Aff_Loc = (gens:Seq[() => String]) => {
+      val affGen = gens(0)
+      val locGen = gens(1)
+      "%s, %s".format(affGen(), locGen())
+    }
+    def Gen_City_Country() = {
+      "%s, %s".format(randCity(), randCountry())
+    }
+    def Gen_City_StatePostal_Country() = {
+      "%s, %s, %s".format(randCity(), randStatePostal(), randCountry())
+    }
+    def Gen_District_CityPostal_Country() = {
+      "%s, %s, %s".format(randWords(3, 1), randCityPostal(), randCountry())
     }
     def Gen_City_State() = {
       "%s, %s".format(randCity(), randStateOrAbbr())
     }
-    val Gen_Divi_MedCenter__City_State = (params:Seq[String]) => {
-      "%s, %s".format(Gen_Divi_MedCenter(), Gen_City_State())
-    }
+
+
     val FullTemplates = IndexedSeq(
       (
-        Gen_Divi_MedCenter__City_State,
-        () => {
-          Seq[String]()
-        },
+        Gen_Aff_Loc,
+        Seq[() => String](
+          Gen_Divi_MedCenter, Gen_City_State
+        ),
         AffTags_Divi_MedCenter ::: LocTags_City_State
+      ),
+      (
+        Gen_Aff_Loc,
+        Seq[() => String](
+          Gen_School_Univ, Gen_City_Country
+        ),
+        AffTags_School_Univ ::: LocTags_City_Country
+      ),
+      (
+        Gen_Aff_Loc,
+        Seq[() => String](
+          Gen_School_Univ, Gen_City_StatePostal_Country
+        ),
+        AffTags_School_Univ ::: LocTags_City_StatePostal_Country
+      ),
+      (
+        Gen_Aff_Loc,
+        Seq[() => String](
+          Gen_Dept_College, Gen_City_StatePostal_Country
+        ),
+        AffTags_Department_College ::: LocTags_City_StatePostal_Country
+      ),
+      (
+        Gen_Aff_Loc,
+        Seq[() => String](
+          Gen_Dept_Univ, Gen_City_StatePostal_Country
+        ),
+        AffTags_Department_Univ ::: LocTags_City_StatePostal_Country
+      ),
+      (
+        Gen_Aff_Loc,
+        Seq[() => String](
+          Gen_School_Univ, Gen_District_CityPostal_Country
+        ),
+        AffTags_School_Univ ::: LocTags_District_CityPostal_Country
+      ),
+      (
+        Gen_Aff_Loc,
+        Seq[() => String](
+          Gen_ResearchInstitute, Gen_District_CityPostal_Country
+        ),
+        AffTags_ResearchInstitute ::: LocTags_District_CityPostal_Country
       )
+
     )
 
     val Separator = "===="
@@ -137,19 +215,18 @@ object PubAffiliationTools extends App {
     }
 
     def genFullData(count:Int):IndexedSeq[String] = {
-      rand.setSeed(0)
 
       (0 until count).map { i =>
         val ti = rand.nextInt()
         val templIdx = math.abs(ti) % FullTemplates.size
         val (f1, f2, l) = FullTemplates(templIdx)
-        val params:Seq[String] = f2()
-        f1(params) + Separator + l.mkString(",")
+        val gens:Seq[() => String] = f2
+        f1(f2) + Separator + l.mkString(",")
       }
     }
 
     def genDataAndSave(count:Int, of:String):Unit = {
-      val d = genData(count)
+      val d = genFullData(count)
 
       IOUtils.write(d.mkString("\n"), new FileOutputStream(of), charset)
     }
@@ -209,17 +286,17 @@ object PubAffiliationTools extends App {
 //
 //  println(GenData.randCountry(4))
 //
-  println(GenData.genFullData(10).mkString("\n"))
+//  println(GenData.genFullData(20).mkString("\n"))
 
-//  val f1 = "/media/sf_work/aff-data/train-1.txt"
+//  val f1 = "/media/sf_work/aff-data/train-2.txt"
 //  GenData.genDataAndSave(20000, f1)
-//  val f2 = "/media/sf_work/aff-data/train-1-converted.txt"
+//  val f2 = "/media/sf_work/aff-data/train-2-converted.txt"
 //  GenData.convFile(f1, f2)
 
-//  val f1 = "/media/sf_work/aff-data/test-1.txt"
-//  val f2 = "/media/sf_work/aff-data/test-1-converted.txt"
+  val f1 = "/media/sf_work/aff-data/test-2.txt"
+  val f2 = "/media/sf_work/aff-data/test-2-converted.txt"
 
-//  GenData.convTestFile(f1, f2)
+  GenData.convTestFile(f1, f2)
 
 //  rand.setSeed(1000)
 //  List(
