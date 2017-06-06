@@ -53,21 +53,30 @@ object PubAffiliationTools extends App {
     }
 
     val Tag_Department = "DEPT"
-    val Tag_ResearchInstitute = "RES_INST"
+    val Tag_ResearchInstitute = "RES-INST"
     val Tag_University = "UNIV"
+    val Tag_UniversityCollege = "UNIV_COLLEGE"
+    val Tag_UniversitySchool = "UNIV_SCHOOL"
     val Tag_College = "COLLEGE"
+    val Tag_Hospital = "HOSPITAL"
     val Tag_School = "SCHOOL"
+    val Tag_MedSchool = "MED-SCHOOL"
     val Tag_Division = "DIVI"
+    val Tag_DiviDept = "DIVI_DEPT"
     val Tag_MedCenter = "MED_CENTER"
-    val Tag_LAB = "DIVI"
     val Tag_Country = "COUNTRY"
     val Tag_StatePostal = "STATE_POSTAL"
+    val Tag_StateCountry = "STATE_POSTAL"
     val Tag_CityPostal = "CITY_POSTAL"
+    val Tag_Postal = "POSTAL"
     val Tag_District = "DISTRICT"
     val Tag_City = "CITY"
+    val Tag_Center = "CENTER"
     val Tag_State = "STATE"
+    val Tag_Facility = "FACILITY"
     val Tag_Street = "STREET"
     val Tag_Building = "BUILDING"
+
 
     val Templates = IndexedSeq(
       // city, state_postal, country
@@ -116,11 +125,73 @@ object PubAffiliationTools extends App {
     def Gen_School_Univ() = {
       "%s, %s".format(randSchool(), randUniv())
     }
+    def Gen_Univ() = {
+      randUniv()
+    }
+    def Gen_School_RestInst_Univ() = {
+      "%s, %s, %s".format(
+        randSchool(),
+        AXRand(InstituteWords, Of, 3, 1),
+        randUniv()
+      )
+    }
     def Gen_Dept_College() = {
       "%s, %s".format(randDept(), randCollege())
     }
+    def Gen_Divi_College() = {
+      "%s, %s".format(randDivi(), randCollege())
+    }
+    def Gen_Dept_Divi_College() = {
+      "%s, %s, %s".format(randDept(), randDivi(), randCollege())
+    }
+
+    def Gen_Dept_UnivCollege() = {
+      "%s, %s %s".format(randDept(), randUniv(), randCollege())
+    }
+    def Gen_Dept_School_Univ() = {
+      "%s, %s %s".format(randDept(), randSchool(), randUniv())
+    }
+    def Gen_Dept_Divi_Univ() = {
+      "%s, %s, %s".format(randDept(), randDivi(), randUniv())
+    }
+    def Gen_Divi_ResInst() = {
+      "%s, %s".format(randDivi(), Gen_ResearchInstitute())
+    }
+    def Gen_Divi_Hospital() = {
+      "%s, %s, %s".format(randDivi(), Gen_Hospital())
+    }
+    def Gen_Center_College() = {
+      "%s, %s".format(randCenter(), randCollege())
+    }
     def Gen_ResearchInstitute() = {
-      "%s %s".format(randWords(3, 1), randInstitute())
+      "%s %s".format(
+        randWords(3, 1),
+        randChoice(
+          () => randInstitute(),
+          () => randPick(InstituteWords)
+        )
+      )
+    }
+    def Gen_ResearchInstituteX2() = {
+      "%s, %s".format(
+        Gen_ResearchInstitute(),
+        Gen_ResearchInstitute()
+      )
+    }
+    def Gen_ResearchInstitute_Univ() = {
+      "%s, %s".format(
+        Gen_ResearchInstitute(),
+        Gen_Univ()
+      )
+    }
+    def Gen_Hospital() = {
+      "%s %s".format(
+        randWords(4, 2),
+        randChoice(
+          () => AXRand(HospitalWords, Of, 3, 1),
+          () => randPick(HospitalWords)
+        )
+      )
     }
     def Gen_Dept_Univ() = {
       "%s, %s".format(randDept(), randUniv())
@@ -139,14 +210,143 @@ object PubAffiliationTools extends App {
     def Gen_City_StatePostal_Country() = {
       "%s, %s, %s".format(randCity(), randStatePostal(), randCountry())
     }
+    def Gen_City_StateCountry() = {
+      "%s, %s USA".format(randCity(), randStateAbbr())
+    }
+    def Gen_CityPostal_Country() = {
+      "%s, %s".format(randCityPostal(), randCountry())
+    }
+    def Gen_City_Postal_Country() = {
+      "%s, %s, %s".format(
+        randCity(),
+        randPostal(),
+        randCountry()
+      )
+    }
+    def Gen_StatePostal_Country() = {
+      "%s, %s".format(randStatePostal(), randCountry())
+    }
     def Gen_District_CityPostal_Country() = {
       "%s, %s, %s".format(randWords(3, 1), randCityPostal(), randCountry())
+    }
+    def Gen_Facility_CityPostal_Country() = {
+      "%s, %s, %s".format(randWords(3, 1), randCityPostal(), randCountry())
+    }
+    def Gen_Street_CityPostal_Country() = {
+      "%s, %s, %s".format(randWords(3, 1), randCityPostal(), randCountry())
+    }
+    def Gen_Facility_Street_CityPostal_Country() = {
+      "%s, %s, %s, %s".format(randWords(3, 1), randWords(3, 1), randCityPostal(), randCountry())
     }
     def Gen_City_State() = {
       "%s, %s".format(randCity(), randStateOrAbbr())
     }
 
 
+    val LocTagList_CityPostal_Country = List(Tag_CityPostal, Tag_Country)
+    val LocTagList_StatePostal_Country = List(Tag_StatePostal, Tag_Country)
+    val LocTagList_City_StateCountry = List(Tag_City, Tag_StateCountry)
+    val LocTagList_City_Country = List(Tag_City, Tag_Country)
+    val LocTagList_City_Postal_Country = List(Tag_City, Tag_Postal, Tag_Country)
+    val LocTagList_City_StatePostal_Country = Tag_City :: LocTagList_StatePostal_Country
+    val LocTagList_District_CityPostal_Country = Tag_District :: LocTagList_CityPostal_Country
+    val LocTagList_Facility_CityPostal_Country = Tag_Facility :: LocTagList_CityPostal_Country
+    val LocTagList_Facility_City_Postal_Country = Tag_Facility :: LocTagList_City_Postal_Country
+    val LocTagList_Facility_Street_CityPostal_Country = Tag_Facility :: Tag_Street :: LocTagList_CityPostal_Country
+    val LocTagList_Facility_Street_City_StatePostal_Country = Tag_Facility :: Tag_Street :: LocTagList_City_StatePostal_Country
+    val LocTagList_Street_CityPostal_Country = Tag_Street :: LocTagList_CityPostal_Country
+    val LocTagList_Empty = List[String]()
+
+    val AffTagList_Center_ResInst_MedSchool = List(Tag_Center, Tag_ResearchInstitute, Tag_MedSchool)
+    val AffTagList_Center_College = List(Tag_Center, Tag_College)
+    val AffTagList_College = List(Tag_College)
+    val AffTagList_Dept_College = List(Tag_Department, Tag_College)
+    val AffTagList_Dept_Divi_College = List(Tag_Department, Tag_Division, Tag_College)
+    val AffTagList_Dept_Divi_Univ = List(Tag_Department, Tag_Division, Tag_University)
+    val AffTagList_Dept_School_Univ = List(Tag_Department, Tag_School, Tag_University)
+    val AffTagList_Dept_Univ = List(Tag_Department, Tag_University)
+    val AffTagList_Dept_UnivCollege = List(Tag_Department, Tag_UniversityCollege)
+    val AffTagList_Dept_UnivSchool = List(Tag_Department, Tag_UniversitySchool)
+    val AffTagList_Divi_ResInst = List(Tag_Division, Tag_ResearchInstitute)
+    val AffTagList_DiviDept_ResInst = List(Tag_DiviDept, Tag_ResearchInstitute)
+    val AffTagList_Divi_College = List(Tag_Division, Tag_College)
+    val AffTagList_Divi_Hospital = List(Tag_Division, Tag_Hospital)
+    val AffTagList_Divi_Hospital_MedSchool = List(Tag_Division, Tag_Hospital, Tag_MedSchool)
+    val AffTagList_Divi_School_Univ = List(Tag_Division, Tag_School, Tag_College)
+    val AffTagList_Hospital = List(Tag_Hospital)
+    val AffTagList_MedSchool = List(Tag_MedSchool)
+    val AffTagList_ResInst = List(Tag_ResearchInstitute)
+    val AffTagList_ResInst_College_Univ = List(Tag_ResearchInstitute, Tag_College, Tag_University)
+    val AffTagList_ResInst_Dept_ResInst = List(Tag_ResearchInstitute, Tag_Department, Tag_ResearchInstitute)
+    val AffTagList_ResInst_Univ = List(Tag_ResearchInstitute, Tag_University)
+    val AffTagList_ResInstX2 = List(Tag_ResearchInstitute, Tag_ResearchInstitute)
+    val AffTagList_School_ResInst_Univ = List(Tag_School, Tag_ResearchInstitute, Tag_University)
+    val AffTagList_School_Univ = List(Tag_School, Tag_University)
+    val AffTagList_Univ = List(Tag_University)
+
+    val AffGenFuncMap = Map[List[String], StrGen](
+      AffTagList_Center_College -> Gen_Center_College,
+      AffTagList_Dept_College -> Gen_Dept_College,
+      AffTagList_Dept_Divi_College -> Gen_Dept_Divi_College,
+      AffTagList_Dept_Divi_Univ -> Gen_Dept_Divi_Univ,
+      AffTagList_Dept_Univ -> Gen_Dept_Univ,
+      AffTagList_Dept_UnivSchool -> Gen_Dept_Univ,
+      AffTagList_Dept_UnivCollege -> Gen_Dept_UnivCollege,
+      AffTagList_Dept_School_Univ -> Gen_Dept_School_Univ,
+      AffTagList_Divi_College -> Gen_Divi_College,
+      AffTagList_Divi_ResInst -> Gen_Divi_ResInst,
+      AffTagList_Divi_Hospital -> Gen_Divi_Hospital,
+      AffTagList_Hospital -> Gen_Hospital,
+      AffTagList_ResInst -> Gen_ResearchInstitute,
+      AffTagList_ResInst_Univ -> Gen_ResearchInstitute_Univ,
+      AffTagList_ResInstX2 -> Gen_ResearchInstituteX2,
+      AffTagList_School_Univ -> Gen_School_Univ,
+      AffTagList_School_ResInst_Univ -> Gen_School_RestInst_Univ,
+      AffTagList_Univ -> Gen_Univ
+    )
+
+    type StrGen = () => String
+    val LocGenFuncMap = Map[List[String], StrGen](
+      LocTagList_CityPostal_Country -> Gen_CityPostal_Country,
+      LocTagList_StatePostal_Country -> Gen_StatePostal_Country,
+      LocTagList_City_StateCountry -> Gen_City_StateCountry,
+      LocTagList_City_Country -> Gen_City_Country,
+      LocTagList_City_Postal_Country -> Gen_City_Postal_Country,
+      LocTagList_City_StatePostal_Country -> Gen_City_StatePostal_Country,
+      LocTagList_District_CityPostal_Country -> Gen_District_CityPostal_Country,
+      LocTagList_Facility_CityPostal_Country -> Gen_Facility_CityPostal_Country,
+      LocTagList_Street_CityPostal_Country -> Gen_Street_CityPostal_Country,
+      LocTagList_Facility_Street_CityPostal_Country -> Gen_Facility_Street_CityPostal_Country,
+      LocTagList_Empty -> { () => "" }
+    )
+
+    val FullTemplates = IndexedSeq(
+      AffTagList_Dept_UnivSchool -> LocTagList_City_Country,
+      AffTagList_Divi_ResInst -> LocTagList_City_Postal_Country,
+      AffTagList_Dept_Univ -> LocTagList_CityPostal_Country,
+      AffTagList_Divi_College -> LocTagList_City_StatePostal_Country,
+      AffTagList_Dept_Divi_College -> LocTagList_CityPostal_Country,
+      //AffTagList_Center_ResInst_MedSchool -> LocTagList_CityPostal_Country,
+      AffTagList_Divi_ResInst -> LocTagList_Facility_CityPostal_Country,
+      AffTagList_Divi_College -> LocTagList_CityPostal_Country,
+      AffTagList_ResInst_Univ -> LocTagList_Street_CityPostal_Country,
+      AffTagList_ResInstX2 -> LocTagList_City_StatePostal_Country,
+      AffTagList_ResInst -> LocTagList_Facility_Street_CityPostal_Country,
+      //AffTagList_DiviDept_ResInst -> LocTagList_City_StatePostal_Country,
+      AffTagList_Center_College -> LocTagList_CityPostal_Country,
+      AffTagList_Univ -> LocTagList_CityPostal_Country,
+      AffTagList_Univ -> LocTagList_City_StatePostal_Country,
+      AffTagList_Hospital -> LocTagList_CityPostal_Country,
+      AffTagList_ResInst_Univ -> LocTagList_CityPostal_Country,
+      AffTagList_School_ResInst_Univ -> LocTagList_Empty,
+      AffTagList_School_Univ -> LocTagList_Empty,
+      AffTagList_ResInstX2 -> LocTagList_Empty,
+      //AffTagList_ResInst_Dept_ResInst -> LocTagList_City_StatePostal_Country,
+      AffTagList_Dept_Divi_Univ -> LocTagList_Street_CityPostal_Country,
+      AffTagList_School_Univ -> LocTagList_CityPostal_Country
+    )
+
+    /*
     val FullTemplates = IndexedSeq(
       (
         Gen_Aff_Loc,
@@ -199,6 +399,7 @@ object PubAffiliationTools extends App {
       )
 
     )
+    */
 
     val Separator = "===="
 
@@ -216,12 +417,24 @@ object PubAffiliationTools extends App {
 
     def genFullData(count:Int):IndexedSeq[String] = {
 
+//      (0 until count).map { i =>
+//        val ti = rand.nextInt()
+//        val templIdx = math.abs(ti) % FullTemplates.size
+//        val (f1, f2, l) = FullTemplates(templIdx)
+//        val gens:Seq[() => String] = f2
+//        f1(f2) + Separator + l.mkString(",")
+//      }
+
       (0 until count).map { i =>
         val ti = rand.nextInt()
         val templIdx = math.abs(ti) % FullTemplates.size
-        val (f1, f2, l) = FullTemplates(templIdx)
-        val gens:Seq[() => String] = f2
-        f1(f2) + Separator + l.mkString(",")
+        val (affTagList, locTagList) = FullTemplates(templIdx)
+        val aff = AffGenFuncMap(affTagList)()
+        val loc = LocGenFuncMap(locTagList)()
+        if (loc.nonEmpty) {
+          s"$aff,$loc" + Separator + (affTagList:::locTagList).mkString(",")
+        }
+        else aff + Separator + affTagList.mkString(",")
       }
     }
 
@@ -289,14 +502,14 @@ object PubAffiliationTools extends App {
 //  println(GenData.genFullData(20).mkString("\n"))
 
 //  val f1 = "/media/sf_work/aff-data/train-2.txt"
-//  GenData.genDataAndSave(20000, f1)
+//  GenData.genDataAndSave(30000, f1)
 //  val f2 = "/media/sf_work/aff-data/train-2-converted.txt"
 //  GenData.convFile(f1, f2)
 
-  val f1 = "/media/sf_work/aff-data/test-2.txt"
-  val f2 = "/media/sf_work/aff-data/test-2-converted.txt"
-
-  GenData.convTestFile(f1, f2)
+//  val f1 = "/media/sf_work/aff-data/test-2.txt"
+//  val f2 = "/media/sf_work/aff-data/test-2-converted.txt"
+//
+//  GenData.convTestFile(f1, f2)
 
 //  rand.setSeed(1000)
 //  List(

@@ -115,6 +115,7 @@ object RandGen {
   val UniversityWords = IndexedSeq("University")
   val SchoolWords = IndexedSeq("School")
   val CollegeWords = IndexedSeq("College")
+  val HospitalWords = IndexedSeq("Hospital")
 
   val ForOf = IndexedSeq("for", "of")
   val Of = IndexedSeq("of")
@@ -130,31 +131,40 @@ object RandGen {
     "%s %s".format(randWords(maxCount, minCount), setA(idxA))
   }
 
-  def randInstitute() = AXRand(InstituteWords, Of, 4, 2)
-  def randCenter() = AXRand(CenterWords, ForOf, 4, 2)
-  def randDept() = AXRand(DeptWords, Of, 4, 2)
-  def randDivi() = AXRand(DivisionWords, Of, 4, 1)
-  def randUniv() = {
-    val c = rand.nextInt() % 2
-    if (c == 0) AXRand(UniversityWords, Of, 4, 1)
-    else RandA(UniversityWords, 4, 2)
-  }
-  def randSchool() = AXRand(SchoolWords, Of, 4, 1)
-  def randCollege() = AXRand(CollegeWords, Of, 4, 1)
-
   type StrGen = ()=>String
   def randChoice(gens:StrGen*):String = {
     val c = math.abs(rand.nextInt) % gens.size
     gens(c)()
   }
 
+  def randInstitute() = AXRand(InstituteWords, Of, 4, 2)
+
+  def randCenter() = AXRand(CenterWords, ForOf, 4, 2)
+  def randDept() = {
+    randChoice(
+      () => AXRand(DeptWords, Of, 4, 1),
+      () => RandA(DeptWords, 3, 1)
+    )
+  }
+  def randDivi() = AXRand(DivisionWords, Of, 4, 1)
+  def randUniv() = {
+    randChoice(
+      () => AXRand(UniversityWords, Of, 4, 1),
+      () => RandA(UniversityWords, 4, 2)
+    )
+  }
+  def randSchool() = AXRand(SchoolWords, Of, 4, 1)
+  def randCollege() = AXRand(CollegeWords, Of, 4, 1)
+
   def randStatePostal() = {
     val postal = randChoice(randUsPostal1, randUsPostal2)
     "%s %s".format(randStateAbbr(), postal)
   }
 
+  def randPostal() = randChoice(randUsPostal1, randUsPostal2, randUkPostal)
+
   def randCityPostal() = {
-    val postal = randChoice(randUsPostal1, randUsPostal2, randUkPostal)
+    val postal = randPostal()
     "%s %s".format(randCity(), postal)
   }
 
