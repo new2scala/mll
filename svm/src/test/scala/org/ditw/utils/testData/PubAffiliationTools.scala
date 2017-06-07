@@ -448,12 +448,13 @@ object PubAffiliationTools extends App {
     private def makeCommaLine:String = s", NA O"
 
     def buildConll(rawText:String, tags:IndexedSeq[String]):String = {
-      val affParts = rawText.split(",")
+      val affParts = split2NonEmptyParts(rawText)
       if (affParts.length != tags.length)
         throw new IllegalArgumentException(s"Text/Tag length mismatch: [$rawText](${affParts.length})/[$tags](${tags.length})")
       (0 until affParts.length).map { partIdx =>
-        val p = affParts(partIdx).trim
-        val words = p.split("\\s+")
+        val trimmed = affParts(partIdx).replaceAll("(^\\h*)|(\\h*$)","")
+        //val p = affParts(partIdx).trim
+        val words = trimmed.split("\\h+")
         val r = ListBuffer[String]()
         r += makeLine(words.head, "B-"+tags(partIdx))
         r ++= words.tail.map(makeLine(_, "I-"+tags(partIdx)))
@@ -473,9 +474,13 @@ object PubAffiliationTools extends App {
       buildConll(affText, affTagParts)
     }
 
+    def split2NonEmptyParts(l:String):Array[String] = {
+      l.split(",").map(_.trim).filter(_.nonEmpty)
+    }
+
     val TestTag = "-NA-"
     def conv2ConllTestFormat(l:String):String = {
-      val tagCount = l.split(",").length
+      val tagCount = split2NonEmptyParts(l).length
       val tags = new Array[String](tagCount)
       (0 until tagCount).foreach { i => tags(i) = "NA" }
       buildConll(l, tags)
@@ -506,10 +511,10 @@ object PubAffiliationTools extends App {
 //  val f2 = "/media/sf_work/aff-data/train-2-converted.txt"
 //  GenData.convFile(f1, f2)
 
-//  val f1 = "/media/sf_work/aff-data/test-2.txt"
-//  val f2 = "/media/sf_work/aff-data/test-2-converted.txt"
-//
-//  GenData.convTestFile(f1, f2)
+  val f1 = "/media/sf_work/aff-data/test-2.txt"
+  val f2 = "/media/sf_work/aff-data/test-2-converted.txt"
+
+  GenData.convTestFile(f1, f2)
 
 //  rand.setSeed(1000)
 //  List(
