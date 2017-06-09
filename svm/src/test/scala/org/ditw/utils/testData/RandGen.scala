@@ -13,7 +13,7 @@ object RandGen {
 
   val Countries = Set(
     "UK", "USA", "Spain", "Japan", "Norway", "Switzerland", "Australia", "Korea",
-    "France", "Iran", "China", "Austria", "Poland"
+    "France", "Iran", "China", "Austria", "Poland", "United Kingdom", "The Netherlands"
   )
 
   def loadTexts(f:String):IndexedSeq[String] = Source.fromFile(f, charset.name()).getLines().toIndexedSeq
@@ -113,7 +113,7 @@ object RandGen {
   private def randRoad() = randWordsA(RoadWords)
   val LocWords = IndexedSeq("Square", "Park")
   private def randLoc() = randWordsA(LocWords)
-  val FacilityWords = IndexedSeq("Building", "Mansion")
+  val FacilityWords = IndexedSeq("Building", "Mansion", "Buildings")
   private def randFacility() = randWordsA(FacilityWords)
   private val RandLocGen = IndexedSeq[() => String](randRoad, randLoc, randFacility)
   def randOtherLoc():String = {
@@ -121,11 +121,11 @@ object RandGen {
     gen()
   }
 
-  val CenterWords = IndexedSeq("Center", "Centers", "Centre", "Centres")
-  val DeptWords = IndexedSeq("Department", "Dept")
-  val DivisionWords = IndexedSeq("Division")
-  val InstituteWords = IndexedSeq("Institute")
-  val UniversityWords = IndexedSeq("University")
+  val CenterWords = IndexedSeq("Center", "Centers", "Centre", "Centres", "National Center")
+  val DeptWords = IndexedSeq("Department", "Dept", "Departments")
+  val DivisionWords = IndexedSeq("Division", "Faculty", "Laboratory")
+  val InstituteWords = IndexedSeq("Institute", "Institutes", "Institut", "National Institutes")
+  val UniversityWords = IndexedSeq("University", "Universität")
   val CompanyWords = IndexedSeq("Co. Ltd.", "Ltd.", "Ltd", "Inc.", "Inc", "LLC", "Corporation", "Pharmaceuticals", "Llc")
   val SchoolWords = IndexedSeq("School")
   val CollegeWords = IndexedSeq("College")
@@ -153,7 +153,19 @@ object RandGen {
 
   def randInstitute() = AXRand(InstituteWords, Of, 4, 2)
 
-  def randCenter() = AXRand(CenterWords, ForOf, 4, 2)
+  def randOptWordsAXRand(max1:Int, min1:Int, awords:IndexedSeq[String], xwords:IndexedSeq[String], max2:Int, min2:Int) = {
+    val cgen = AXRand(awords, xwords, max2, min2)
+    randChoice(
+      () => cgen,
+      () => randWords(max1, min1) + " " + cgen
+    )
+  }
+
+  def randCenter() = {
+    randOptWordsAXRand(3, 1, CenterWords, ForOf, 4, 2)
+  }
+
+
   def randDept() = {
     randChoice(
       () => AXRand(DeptWords, Of, 4, 1),
@@ -169,17 +181,19 @@ object RandGen {
     )
   }
 
-  def randUnivSchool() = {
-    randUniv() + " " + randSchool()
-  }
+//  def randUnivSchool() = {
+//    randUniv() + " " + randSchool()
+//  }
 
   def randCompany() = {
     randChoice(
       () => RandA(CompanyWords, 4, 1)
     )
   }
-  def randSchool() = AXRand(SchoolWords, Of, 4, 1)
-  def randCollege() = AXRand(CollegeWords, Of, 4, 1)
+  def randSchool() = {
+    randOptWordsAXRand(4, 1, SchoolWords, Of, 4, 1)
+  }
+  def randCollege() = randOptWordsAXRand(3, 1, CollegeWords, Of, 4, 1)
 
   def randStatePostal() = {
     val postal = randChoice(randUsPostal1, randUsPostal2)
