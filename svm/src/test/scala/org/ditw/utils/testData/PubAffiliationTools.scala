@@ -69,13 +69,16 @@ object PubAffiliationTools extends App {
     val Tag_StateCountry = "STATE_POSTAL"
     val Tag_CityPostal = "CITY_POSTAL"
     val Tag_Postal = "POSTAL"
-    val Tag_District = "DISTRICT"
+    //val Tag_District = "DISTRICT"
     val Tag_City = "CITY"
     val Tag_Center = "CENTER"
     val Tag_State = "STATE"
-    val Tag_Facility = "FACILITY"
-    val Tag_Street = "STREET"
-    val Tag_Building = "BUILDING"
+    val Tag_Company = "COMP"
+
+    // other locations including, park, square, street, road, building etc.
+    val Tag_OtherLoc = "OTHER-LOC"
+    //val Tag_Facility = "FACILITY"
+    //val Tag_Street = "STREET"
 
 
     val Templates = IndexedSeq(
@@ -103,9 +106,9 @@ object PubAffiliationTools extends App {
       (
         Uk_Gen1,
         () => {
-          Seq(randRoad(), randCity(), randUkPostal(), "UK")
+          Seq(randOtherLoc(), randCity(), randUkPostal(), "UK")
         },
-        List(Tag_Street, Tag_CityPostal, Tag_Country)
+        List(Tag_OtherLoc, Tag_CityPostal, Tag_Country)
       )
 
     )
@@ -120,13 +123,16 @@ object PubAffiliationTools extends App {
     val LocTags_City_State = List(Tag_City, Tag_State)
     val LocTags_City_Country = List(Tag_City, Tag_Country)
     val LocTags_City_StatePostal_Country = List(Tag_City, Tag_StatePostal, Tag_Country)
-    val LocTags_District_CityPostal_Country = List(Tag_District, Tag_CityPostal, Tag_Country)
+    val LocTags_OtherLoc_CityPostal_Country = List(Tag_OtherLoc, Tag_CityPostal, Tag_Country)
 
     def Gen_School_Univ() = {
       "%s, %s".format(randSchool(), randUniv())
     }
     def Gen_Univ() = {
       randUniv()
+    }
+    def Gen_Comp() = {
+      randCompany()
     }
     def Gen_School_RestInst_Univ() = {
       "%s, %s, %s".format(
@@ -184,6 +190,12 @@ object PubAffiliationTools extends App {
         Gen_Univ()
       )
     }
+    def Gen_ResearchInstitute_Comp() = {
+      "%s, %s".format(
+        Gen_ResearchInstitute(),
+        Gen_Comp()
+      )
+    }
     def Gen_Hospital() = {
       "%s %s".format(
         randWords(4, 2),
@@ -196,10 +208,13 @@ object PubAffiliationTools extends App {
     def Gen_Dept_Univ() = {
       "%s, %s".format(randDept(), randUniv())
     }
+//    def Gen_Dept_UnivSchool() = {
+//      "%s, %s".format(randDept(), randUnivSchool())
+//    }
     def Gen_Divi_MedCenter() = {
       "%s, %s".format(randDivi(), randCenter())
     }
-    val Gen_Aff_Loc = (gens:Seq[() => String]) => {
+    def Gen_Aff_Loc() = (gens:Seq[() => String]) => {
       val affGen = gens(0)
       val locGen = gens(1)
       "%s, %s".format(affGen(), locGen())
@@ -226,18 +241,18 @@ object PubAffiliationTools extends App {
     def Gen_StatePostal_Country() = {
       "%s, %s".format(randStatePostal(), randCountry())
     }
-    def Gen_District_CityPostal_Country() = {
-      "%s, %s, %s".format(randWords(3, 1), randCityPostal(), randCountry())
+    def Gen_OtherLoc_CityPostal_Country() = {
+      "%s, %s, %s".format(randOtherLoc(), randCityPostal(), randCountry())
     }
-    def Gen_Facility_CityPostal_Country() = {
-      "%s, %s, %s".format(randWords(3, 1), randCityPostal(), randCountry())
+    def Gen_OtherLoc_OtherLoc_CityPostal_Country() = {
+      "%s, %s, %s, %s".format(randOtherLoc(), randOtherLoc(), randCityPostal(), randCountry())
     }
-    def Gen_Street_CityPostal_Country() = {
-      "%s, %s, %s".format(randWords(3, 1), randCityPostal(), randCountry())
-    }
-    def Gen_Facility_Street_CityPostal_Country() = {
-      "%s, %s, %s, %s".format(randWords(3, 1), randWords(3, 1), randCityPostal(), randCountry())
-    }
+//    def Gen_Street_CityPostal_Country() = {
+//      "%s, %s, %s".format(randWords(3, 1), randCityPostal(), randCountry())
+//    }
+//    def Gen_Facility_Street_CityPostal_Country() = {
+//      "%s, %s, %s, %s".format(randWords(3, 1), randWords(3, 1), randCityPostal(), randCountry())
+//    }
     def Gen_City_State() = {
       "%s, %s".format(randCity(), randStateOrAbbr())
     }
@@ -249,12 +264,11 @@ object PubAffiliationTools extends App {
     val LocTagList_City_Country = List(Tag_City, Tag_Country)
     val LocTagList_City_Postal_Country = List(Tag_City, Tag_Postal, Tag_Country)
     val LocTagList_City_StatePostal_Country = Tag_City :: LocTagList_StatePostal_Country
-    val LocTagList_District_CityPostal_Country = Tag_District :: LocTagList_CityPostal_Country
-    val LocTagList_Facility_CityPostal_Country = Tag_Facility :: LocTagList_CityPostal_Country
-    val LocTagList_Facility_City_Postal_Country = Tag_Facility :: LocTagList_City_Postal_Country
-    val LocTagList_Facility_Street_CityPostal_Country = Tag_Facility :: Tag_Street :: LocTagList_CityPostal_Country
-    val LocTagList_Facility_Street_City_StatePostal_Country = Tag_Facility :: Tag_Street :: LocTagList_City_StatePostal_Country
-    val LocTagList_Street_CityPostal_Country = Tag_Street :: LocTagList_CityPostal_Country
+    val LocTagList_OtherLoc_CityPostal_Country = Tag_OtherLoc :: LocTagList_CityPostal_Country
+    val LocTagList_Facility_City_Postal_Country = Tag_OtherLoc :: LocTagList_City_Postal_Country
+    val LocTagList_Facility_Street_CityPostal_Country = Tag_OtherLoc :: Tag_OtherLoc :: LocTagList_CityPostal_Country
+    val LocTagList_Facility_Street_City_StatePostal_Country = Tag_OtherLoc :: Tag_OtherLoc :: LocTagList_City_StatePostal_Country
+    val LocTagList_Street_CityPostal_Country = Tag_OtherLoc :: LocTagList_CityPostal_Country
     val LocTagList_Empty = List[String]()
 
     val AffTagList_Center_ResInst_MedSchool = List(Tag_Center, Tag_ResearchInstitute, Tag_MedSchool)
@@ -276,6 +290,7 @@ object PubAffiliationTools extends App {
     val AffTagList_Hospital = List(Tag_Hospital)
     val AffTagList_MedSchool = List(Tag_MedSchool)
     val AffTagList_ResInst = List(Tag_ResearchInstitute)
+    val AffTagList_ResInst_Comp = List(Tag_ResearchInstitute, Tag_Company)
     val AffTagList_ResInst_College_Univ = List(Tag_ResearchInstitute, Tag_College, Tag_University)
     val AffTagList_ResInst_Dept_ResInst = List(Tag_ResearchInstitute, Tag_Department, Tag_ResearchInstitute)
     val AffTagList_ResInst_Univ = List(Tag_ResearchInstitute, Tag_University)
@@ -290,7 +305,7 @@ object PubAffiliationTools extends App {
       AffTagList_Dept_Divi_College -> Gen_Dept_Divi_College,
       AffTagList_Dept_Divi_Univ -> Gen_Dept_Divi_Univ,
       AffTagList_Dept_Univ -> Gen_Dept_Univ,
-      AffTagList_Dept_UnivSchool -> Gen_Dept_Univ,
+//      AffTagList_Dept_UnivSchool -> Gen_Dept_UnivSchool,
       AffTagList_Dept_UnivCollege -> Gen_Dept_UnivCollege,
       AffTagList_Dept_School_Univ -> Gen_Dept_School_Univ,
       AffTagList_Divi_College -> Gen_Divi_College,
@@ -301,6 +316,7 @@ object PubAffiliationTools extends App {
       AffTagList_ResInst_Univ -> Gen_ResearchInstitute_Univ,
       AffTagList_ResInstX2 -> Gen_ResearchInstituteX2,
       AffTagList_School_Univ -> Gen_School_Univ,
+      AffTagList_ResInst_Comp -> Gen_ResearchInstitute_Comp,
       AffTagList_School_ResInst_Univ -> Gen_School_RestInst_Univ,
       AffTagList_Univ -> Gen_Univ
     )
@@ -313,21 +329,20 @@ object PubAffiliationTools extends App {
       LocTagList_City_Country -> Gen_City_Country,
       LocTagList_City_Postal_Country -> Gen_City_Postal_Country,
       LocTagList_City_StatePostal_Country -> Gen_City_StatePostal_Country,
-      LocTagList_District_CityPostal_Country -> Gen_District_CityPostal_Country,
-      LocTagList_Facility_CityPostal_Country -> Gen_Facility_CityPostal_Country,
-      LocTagList_Street_CityPostal_Country -> Gen_Street_CityPostal_Country,
-      LocTagList_Facility_Street_CityPostal_Country -> Gen_Facility_Street_CityPostal_Country,
+      LocTagList_OtherLoc_CityPostal_Country -> Gen_OtherLoc_CityPostal_Country,
+      //LocTagList_Street_CityPostal_Country -> Gen_Street_CityPostal_Country,
+      LocTagList_Facility_Street_CityPostal_Country -> Gen_OtherLoc_OtherLoc_CityPostal_Country,
       LocTagList_Empty -> { () => "" }
     )
 
     val FullTemplates = IndexedSeq(
-      AffTagList_Dept_UnivSchool -> LocTagList_City_Country,
+//      AffTagList_Dept_UnivSchool -> LocTagList_City_Country,
       AffTagList_Divi_ResInst -> LocTagList_City_Postal_Country,
       AffTagList_Dept_Univ -> LocTagList_CityPostal_Country,
       AffTagList_Divi_College -> LocTagList_City_StatePostal_Country,
       AffTagList_Dept_Divi_College -> LocTagList_CityPostal_Country,
       //AffTagList_Center_ResInst_MedSchool -> LocTagList_CityPostal_Country,
-      AffTagList_Divi_ResInst -> LocTagList_Facility_CityPostal_Country,
+      AffTagList_Divi_ResInst -> LocTagList_OtherLoc_CityPostal_Country,
       AffTagList_Divi_College -> LocTagList_CityPostal_Country,
       AffTagList_ResInst_Univ -> LocTagList_Street_CityPostal_Country,
       AffTagList_ResInstX2 -> LocTagList_City_StatePostal_Country,
@@ -343,7 +358,8 @@ object PubAffiliationTools extends App {
       AffTagList_ResInstX2 -> LocTagList_Empty,
       //AffTagList_ResInst_Dept_ResInst -> LocTagList_City_StatePostal_Country,
       AffTagList_Dept_Divi_Univ -> LocTagList_Street_CityPostal_Country,
-      AffTagList_School_Univ -> LocTagList_CityPostal_Country
+      AffTagList_School_Univ -> LocTagList_CityPostal_Country,
+      AffTagList_ResInst_Comp -> LocTagList_City_Country
     )
 
     /*
@@ -506,15 +522,15 @@ object PubAffiliationTools extends App {
 //
 //  println(GenData.genFullData(20).mkString("\n"))
 
-//  val f1 = "/media/sf_work/aff-data/train-2.txt"
-//  GenData.genDataAndSave(30000, f1)
-//  val f2 = "/media/sf_work/aff-data/train-2-converted.txt"
-//  GenData.convFile(f1, f2)
+  val f1 = "/media/sf_work/aff-data/train-2.txt"
+  GenData.genDataAndSave(30000, f1)
+  val f2 = "/media/sf_work/aff-data/train-2-converted.txt"
+  GenData.convFile(f1, f2)
 
-  val f1 = "/media/sf_work/aff-data/test-2.txt"
-  val f2 = "/media/sf_work/aff-data/test-2-converted.txt"
-
-  GenData.convTestFile(f1, f2)
+//  val f1 = "/media/sf_work/aff-data/test-2.txt"
+//  val f2 = "/media/sf_work/aff-data/test-2-converted.txt"
+//
+//  GenData.convTestFile(f1, f2)
 
 //  rand.setSeed(1000)
 //  List(

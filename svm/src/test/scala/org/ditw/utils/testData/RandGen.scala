@@ -60,7 +60,7 @@ object RandGen {
   def genNumCapLetters(length:Int):String = {
     genSeq(num_cap, length)
   }
-  def randPick(entries:IndexedSeq[String]):String = {
+  def randPick[T](entries:IndexedSeq[T]):T = {
     val idx = math.abs(rand.nextInt) % entries.size
     entries(idx)
   }
@@ -104,8 +104,21 @@ object RandGen {
   }
 
 
-  def randRoad() = {
-    randWords(5, 2)
+
+  def randWordsA(a:IndexedSeq[String]) = {
+    randWords(4, 1) + " " + randPick(a)
+  }
+
+  val RoadWords = IndexedSeq("Road", "Street", "Avenue")
+  private def randRoad() = randWordsA(RoadWords)
+  val LocWords = IndexedSeq("Square", "Park")
+  private def randLoc() = randWordsA(LocWords)
+  val FacilityWords = IndexedSeq("Building", "Mansion")
+  private def randFacility() = randWordsA(FacilityWords)
+  private val RandLocGen = IndexedSeq[() => String](randRoad, randLoc, randFacility)
+  def randOtherLoc():String = {
+    val gen = randPick(RandLocGen)
+    gen()
   }
 
   val CenterWords = IndexedSeq("Center", "Centers", "Centre", "Centres")
@@ -113,6 +126,7 @@ object RandGen {
   val DivisionWords = IndexedSeq("Division")
   val InstituteWords = IndexedSeq("Institute")
   val UniversityWords = IndexedSeq("University")
+  val CompanyWords = IndexedSeq("Co. Ltd.", "Ltd.", "Ltd", "Inc.", "Inc", "LLC", "Corporation", "Pharmaceuticals", "Llc")
   val SchoolWords = IndexedSeq("School")
   val CollegeWords = IndexedSeq("College")
   val HospitalWords = IndexedSeq("Hospital")
@@ -150,7 +164,18 @@ object RandGen {
   def randUniv() = {
     randChoice(
       () => AXRand(UniversityWords, Of, 4, 1),
-      () => RandA(UniversityWords, 4, 2)
+      () => RandA(UniversityWords, 4, 2),
+      () => randWords(2, 1) + " " + AXRand(UniversityWords, Of, 4, 1)
+    )
+  }
+
+  def randUnivSchool() = {
+    randUniv() + " " + randSchool()
+  }
+
+  def randCompany() = {
+    randChoice(
+      () => RandA(CompanyWords, 4, 1)
     )
   }
   def randSchool() = AXRand(SchoolWords, Of, 4, 1)
