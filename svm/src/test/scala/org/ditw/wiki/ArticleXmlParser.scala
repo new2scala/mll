@@ -22,6 +22,15 @@ object ArticleXmlParser extends App {
     val XmlTag_Revision = "revision"
     val XmlTag_Title = "title"
     val XmlTag_Text = "text"
+
+    val SectionPatterns = IndexedSeq(
+      """==(.*)==""".r,
+      """===(.*)===""".r,
+      """====(.*)====""".r,
+      """=====(.*)=====""".r,
+      """======(.*)======""".r,
+      """=======(.*)=======""".r
+    )
   }
 
   import Consts._
@@ -50,6 +59,93 @@ object ArticleXmlParser extends App {
   }
   case class PageRef(pid:String, altText:Option[String] = None)
 
+  import util.control.Breaks._
+  private def parseSectionLine(line:String):Option[(String, Int)] = {
+    var r:Option[(String, Int)] = None
+    breakable {
+      SectionPatterns.indices.reverse.foreach { idx =>
+        val m = SectionPatterns(idx).unapplySeq(line)
+        if (m.nonEmpty) {
+          r = Option(m.get.head, idx+1)
+          break
+        }
+      }
+    }
+    r
+  }
+
+  private def seekTillSectionEnd(linesIt:Iterator[String], currIndent:Int):(Iterator[String], List[String]) = {
+    val currLines = ListBuffer[String]()
+    val (it1, it2) = linesIt.duplicate
+    breakable {
+      while (it2.hasNext) {
+        val trimmed = it2.next.trim
+        val p = parseSectionLine(trimmed)
+        if (p.isEmpty) {
+          currLines += trimmed
+        }
+        else {
+          val secIndent = p.get._2
+          val secTitle = p.get._1
+
+          if (secIndent <= currIndent) {
+            break
+          }
+          else currLines += trimmed
+        }
+        it1.next
+      }
+    }
+    it1 -> currLines.toList
+  }
+
+  private def parseSection(title:String, indent:Int, linesIt:Iterator[String]): (Iterator[String], PageSection) = {
+    val (newLinesIt, secLines) = seekTillSectionEnd(linesIt, indent)
+    var secLinesIt = secLines.iterator
+    val preLines = ListBuffer[String]()
+    val postLines = ListBuffer[String]()
+    val subSections = ListBuffer[PageSection]()
+    breakable {
+      while (secLinesIt.hasNext) {
+        val trimmed = secLinesIt.next.trim
+        val p = parseSectionLine(trimmed)
+        if (p.isEmpty) {
+          if (subSections.isEmpty) preLines += trimmed
+          else postLines += trimmed
+        }
+        else {
+          val subIndent = p.get._2
+          val subTitle = p.get._1
+
+          val (newIt, subSection) = parseSection(subTitle, subIndent, secLinesIt)
+          subSections += subSection
+          secLinesIt = newIt
+        }
+      }
+    }
+    newLinesIt -> PageSection(title, indent, subSections.toList, preLines.toList, postLines.toList)
+  }
+
+  case class PageSection(title:String, indent:Int, subSections:List[PageSection], preLines:List[String], postLines:List[String]) {
+
+    private val preLineContents:List[LineContent] = {
+      preLines.filter(_.trim.nonEmpty).map(LineContent)
+    }
+
+    def preLinesWithPageRefs():List[LineContent] = {
+      preLineContents.filter(_.getPageRefs.nonEmpty)
+    }
+
+    private val postLineContents:List[LineContent] = {
+      postLines.filter(_.trim.nonEmpty).map(LineContent)
+    }
+
+    def postLinesWithPageRefs():List[LineContent] = {
+      postLineContents.filter(_.getPageRefs.nonEmpty)
+    }
+
+  }
+
   case class LineContent(text:String) {
     private val pageRefs:IndexedSeq[PageRef] = findPageRefs(text)
     def getPageRefs = pageRefs
@@ -66,13 +162,16 @@ object ArticleXmlParser extends App {
       }
       else None
     }
-    private val lineContents:List[LineContent] = {
-      text.lines.filter(_.trim.nonEmpty).map(LineContent).toList
-    }
 
-    def linesWithPageRefs():List[LineContent] = {
-      lineContents.filter(_.getPageRefs.nonEmpty)
-    }
+    private val sections = parseSection(pid, 0, text.lines)
+    def getSections = sections
+//    private val lineContents:List[LineContent] = {
+//      text.lines.filter(_.trim.nonEmpty).map(LineContent).toList
+//    }
+//
+//    def linesWithPageRefs():List[LineContent] = {
+//      lineContents.filter(_.getPageRefs.nonEmpty)
+//    }
   }
 
   import xml.XML
@@ -91,8 +190,8 @@ object ArticleXmlParser extends App {
 
   val pages = readPages(new FileInputStream("/media/sf_work/tmp/wiki-articles/articles.part0003.xml"))
   pages.foreach { p =>
-    val ls = p.linesWithPageRefs()
-    println(ls.size)
+    val (_, secs) = p.getSections
+    println(secs.title)
   }
 
 }
