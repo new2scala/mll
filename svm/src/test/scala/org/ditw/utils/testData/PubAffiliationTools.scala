@@ -522,15 +522,15 @@ object PubAffiliationTools extends App {
 //
 //  println(GenData.genFullData(20).mkString("\n"))
 
-  val f1 = "/media/sf_work/aff-data/train-2.txt"
-  GenData.genDataAndSave(30000, f1)
-  val f2 = "/media/sf_work/aff-data/train-2-converted.txt"
-  GenData.convFile(f1, f2)
+//  val f1 = "/media/sf_work/aff-data/train-2.txt"
+//  GenData.genDataAndSave(30000, f1)
+//  val f2 = "/media/sf_work/aff-data/train-2-converted.txt"
+//  GenData.convFile(f1, f2)
 
-//  val f1 = "/media/sf_work/aff-data/test-2.txt"
-//  val f2 = "/media/sf_work/aff-data/test-2-converted.txt"
-//
-//  GenData.convTestFile(f1, f2)
+  val f1 = "/media/sf_work/aff-data/test-2.txt"
+  val f2 = "/media/sf_work/aff-data/test-2-converted.txt"
+
+  GenData.convTestFile(f1, f2)
 
 //  rand.setSeed(1000)
 //  List(

@@ -17,6 +17,7 @@ object ArticleXmlParser extends App {
 
     val PageRefSearchStart = """[["""
     val PageRefSearchEnd = """]]"""
+    val PageRefFile = "File:"
 
     val XmlTag_Page = "page"
     val XmlTag_Revision = "revision"
@@ -57,7 +58,9 @@ object ArticleXmlParser extends App {
     }
     r.toIndexedSeq
   }
-  case class PageRef(pid:String, altText:Option[String] = None)
+  case class PageRef(pid:String, altText:Option[String] = None) {
+    private val isFileRef:Boolean = pid.startsWith(PageRefFile)
+  }
 
   import util.control.Breaks._
   private def parseSectionLine(line:String):Option[(String, Int)] = {
