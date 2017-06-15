@@ -15,8 +15,9 @@ object ArticleXmlParser extends App {
     val RedirectPageRefExtractor = """.*\[\[(.*)\]\].*""".r
     val PageRefWithAltTextExtractor = """(.*)\|(.*)""".r
 
-    val PageRefSearchStart = """[["""
-    val PageRefSearchEnd = """]]"""
+//    val PageRefSearchStart = """[["""
+//    val PageRefSearchEnd = """]]"""
+    val delimiter = ("[[", "]]")
     val PageRefFile = "File:"
 
     val XmlTag_Page = "page"
@@ -32,11 +33,26 @@ object ArticleXmlParser extends App {
       """======(.*)======""".r,
       """=======(.*)=======""".r
     )
+
+    val EmptyPageRefList = List[PageRef]()
   }
 
   import Consts._
 
+  import LineProcessingUtils._
+
+  private def recStruct2PageRef(rs:RecTextStruct):PageRef = {
+    val children = rs.subStructs.map(recStruct2PageRef)
+    rs.text match {
+      case PageRefWithAltTextExtractor(pid, altText) => PageRef(pid, Option(altText), children)
+      case _ => PageRef(rs.text, None, children)
+    }
+  }
   private def findPageRefs(text:String):IndexedSeq[PageRef] = {
+    val recStructs = findRecStruct(text, delimiter)
+
+    recStructs.map(recStruct2PageRef).toIndexedSeq
+    /*
     var startIdx = 0
 
     val r = ListBuffer[PageRef]()
@@ -57,9 +73,12 @@ object ArticleXmlParser extends App {
       else startIdx = text.length
     }
     r.toIndexedSeq
+    */
   }
-  case class PageRef(pid:String, altText:Option[String] = None) {
+
+  case class PageRef(pid:String, altText:Option[String] = None, children:List[PageRef] = EmptyPageRefList) {
     private val isFileRef:Boolean = pid.startsWith(PageRefFile)
+    val text = if (altText.nonEmpty) altText.get else pid
   }
 
   import util.control.Breaks._
