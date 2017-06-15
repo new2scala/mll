@@ -222,9 +222,11 @@ object PubAffiliationTools extends App {
     def Gen_City_Country() = {
       "%s, %s".format(randCity(), randCountry())
     }
-    def Gen_City_StatePostal_Country() = {
-      "%s, %s, %s".format(randCity(), randStatePostal(), randCountry())
+    def _Gen_City_StatePostal_Country(country:Option[String] = None) = {
+      "%s, %s, %s".format(randCity(), randStatePostal(), country.getOrElse(randCountry()))
     }
+    def Gen_City_StatePostal_Country() = _Gen_City_StatePostal_Country()
+    def Gen_City_StatePostal_USA() = _Gen_City_StatePostal_Country(Option("USA"))
     def Gen_City_StateCountry() = {
       "%s, %s USA".format(randCity(), randStateAbbr())
     }
@@ -244,6 +246,11 @@ object PubAffiliationTools extends App {
     def Gen_OtherLoc_CityPostal_Country() = {
       "%s, %s, %s".format(randOtherLoc(), randCityPostal(), randCountry())
     }
+    def _Gen_OtherLoc_City_StatePostal_Country(country:Option[String] = None) = {
+      "%s, %s, %s, %s".format(randOtherLoc(), randCity(), randStatePostal(), country.getOrElse(randCountry()))
+    }
+    def Gen_OtherLoc_City_StatePostal_Country() = _Gen_OtherLoc_City_StatePostal_Country()
+    def Gen_OtherLoc_City_StatePostal_USA() = _Gen_OtherLoc_City_StatePostal_Country(Option("USA"))
     def Gen_OtherLoc_OtherLoc_CityPostal_Country() = {
       "%s, %s, %s, %s".format(randOtherLoc(), randOtherLoc(), randCityPostal(), randCountry())
     }
@@ -264,6 +271,9 @@ object PubAffiliationTools extends App {
     val LocTagList_City_Country = List(Tag_City, Tag_Country)
     val LocTagList_City_Postal_Country = List(Tag_City, Tag_Postal, Tag_Country)
     val LocTagList_City_StatePostal_Country = Tag_City :: LocTagList_StatePostal_Country
+    val LocTagList_City_StatePostal_USA = Tag_City :: LocTagList_StatePostal_Country
+    val LocTagList_OtherLoc_City_StatePostal_Country = Tag_OtherLoc :: LocTagList_City_StatePostal_Country
+    val LocTagList_OtherLoc_City_StatePostal_USA = Tag_OtherLoc :: LocTagList_City_StatePostal_Country
     val LocTagList_OtherLoc_CityPostal_Country = Tag_OtherLoc :: LocTagList_CityPostal_Country
     val LocTagList_Facility_City_Postal_Country = Tag_OtherLoc :: LocTagList_City_Postal_Country
     val LocTagList_Facility_Street_CityPostal_Country = Tag_OtherLoc :: Tag_OtherLoc :: LocTagList_CityPostal_Country
@@ -329,7 +339,10 @@ object PubAffiliationTools extends App {
       LocTagList_City_Country -> Gen_City_Country,
       LocTagList_City_Postal_Country -> Gen_City_Postal_Country,
       LocTagList_City_StatePostal_Country -> Gen_City_StatePostal_Country,
+      LocTagList_OtherLoc_City_StatePostal_Country -> Gen_OtherLoc_City_StatePostal_Country,
+      LocTagList_OtherLoc_City_StatePostal_USA -> Gen_OtherLoc_City_StatePostal_USA,
       LocTagList_OtherLoc_CityPostal_Country -> Gen_OtherLoc_CityPostal_Country,
+      LocTagList_City_StatePostal_USA -> Gen_City_StatePostal_Country,
       //LocTagList_Street_CityPostal_Country -> Gen_Street_CityPostal_Country,
       LocTagList_Facility_Street_CityPostal_Country -> Gen_OtherLoc_OtherLoc_CityPostal_Country,
       LocTagList_Empty -> { () => "" }
@@ -360,6 +373,29 @@ object PubAffiliationTools extends App {
       AffTagList_Dept_Divi_Univ -> LocTagList_Street_CityPostal_Country,
       AffTagList_School_Univ -> LocTagList_CityPostal_Country,
       AffTagList_ResInst_Comp -> LocTagList_City_Country
+    )
+
+    val UsaTemplates = IndexedSeq(
+      //      AffTagList_Dept_UnivSchool -> LocTagList_City_Country,
+      AffTagList_Divi_College -> LocTagList_City_StatePostal_USA,
+      AffTagList_Dept_Divi_College -> LocTagList_City_StatePostal_USA,
+      //AffTagList_Center_ResInst_MedSchool -> LocTagList_CityPostal_Country,
+      AffTagList_Divi_ResInst -> LocTagList_OtherLoc_City_StatePostal_USA,
+      AffTagList_ResInst_Univ -> LocTagList_City_StatePostal_USA,
+      AffTagList_ResInstX2 -> LocTagList_OtherLoc_City_StatePostal_USA,
+      AffTagList_ResInst -> LocTagList_City_StatePostal_USA,
+      //AffTagList_DiviDept_ResInst -> LocTagList_City_StatePostal_Country,
+      AffTagList_Center_College -> LocTagList_OtherLoc_City_StatePostal_USA,
+      AffTagList_Univ -> LocTagList_OtherLoc_City_StatePostal_USA,
+      AffTagList_Univ -> LocTagList_City_StatePostal_USA,
+      AffTagList_Hospital -> LocTagList_City_StatePostal_USA,
+      AffTagList_ResInst_Univ -> LocTagList_City_StatePostal_USA,
+      AffTagList_School_ResInst_Univ -> LocTagList_City_StatePostal_USA,
+      AffTagList_School_Univ -> LocTagList_City_StatePostal_USA,
+      AffTagList_ResInstX2 -> LocTagList_City_StatePostal_USA,
+      //AffTagList_ResInst_Dept_ResInst -> LocTagList_City_StatePostal_Country,
+      AffTagList_Dept_Divi_Univ -> LocTagList_City_StatePostal_USA,
+      AffTagList_School_Univ -> LocTagList_City_StatePostal_USA
     )
 
     /*
@@ -454,8 +490,31 @@ object PubAffiliationTools extends App {
       }
     }
 
+    def genUSAData(count:Int):IndexedSeq[String] = {
+
+      //      (0 until count).map { i =>
+      //        val ti = rand.nextInt()
+      //        val templIdx = math.abs(ti) % FullTemplates.size
+      //        val (f1, f2, l) = FullTemplates(templIdx)
+      //        val gens:Seq[() => String] = f2
+      //        f1(f2) + Separator + l.mkString(",")
+      //      }
+
+      (0 until count).map { i =>
+        val ti = rand.nextInt()
+        val templIdx = math.abs(ti) % UsaTemplates.size
+        val (affTagList, locTagList) = UsaTemplates(templIdx)
+        val aff = AffGenFuncMap(affTagList)()
+        val loc = LocGenFuncMap(locTagList)()
+        if (loc.nonEmpty) {
+          s"$aff,$loc" + Separator + (affTagList:::locTagList).mkString(",")
+        }
+        else aff + Separator + affTagList.mkString(",")
+      }
+    }
+
     def genDataAndSave(count:Int, of:String):Unit = {
-      val d = genFullData(count)
+      val d = genUSAData(count)
 
       IOUtils.write(d.mkString("\n"), new FileOutputStream(of), charset)
     }
@@ -522,13 +581,13 @@ object PubAffiliationTools extends App {
 //
 //  println(GenData.genFullData(20).mkString("\n"))
 
-//  val f1 = "/media/sf_work/aff-data/train-2.txt"
+//  val f1 = "/media/sf_work/aff-data/usa-train.txt"
 //  GenData.genDataAndSave(30000, f1)
-//  val f2 = "/media/sf_work/aff-data/train-2-converted.txt"
+//  val f2 = "/media/sf_work/aff-data/usa-train-converted.txt"
 //  GenData.convFile(f1, f2)
 
-  val f1 = "/media/sf_work/aff-data/test-2.txt"
-  val f2 = "/media/sf_work/aff-data/test-2-converted.txt"
+  val f1 = "/media/sf_work/aff-data/usa-test.txt"
+  val f2 = "/media/sf_work/aff-data/usa-test-converted.txt"
 
   GenData.convTestFile(f1, f2)
 

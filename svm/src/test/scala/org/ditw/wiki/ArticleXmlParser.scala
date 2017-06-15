@@ -166,6 +166,8 @@ object ArticleXmlParser extends App {
       postLineContents.filter(_.getPageRefs.nonEmpty)
     }
 
+    def allLinesWithPageRefs:List[LineContent] = preLinesWithPageRefs() ++ postLinesWithPageRefs() ++ subSections.flatMap(_.allLinesWithPageRefs)
+
   }
 
   case class LineContent(text:String) {
@@ -187,6 +189,11 @@ object ArticleXmlParser extends App {
 
     private val sections = parseSection(pid, 0, text.lines)
     def getSections = sections
+
+    def getNonFileRefs() = {
+      val (_, sec) = getSections
+      sec.allLinesWithPageRefs
+    }
 //    private val lineContents:List[LineContent] = {
 //      text.lines.filter(_.trim.nonEmpty).map(LineContent).toList
 //    }
@@ -213,7 +220,9 @@ object ArticleXmlParser extends App {
   val pages = readPages(new FileInputStream("/media/sf_work/tmp/wiki-articles/articles.part0003.xml"))
   pages.foreach { p =>
     val (_, secs) = p.getSections
-    println(secs.title)
+    val linesWithRef = secs.allLinesWithPageRefs
+    println(linesWithRef.size)
+    //println(secs.title)
   }
 
 }
